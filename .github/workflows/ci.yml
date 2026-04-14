@@ -1,19 +1,18 @@
-name: CI — Lint, Type Check & Tests
+name: CI
 
 on:
   push:
-    branches: [main, develop, 'feature/**']
+    branches: [main, 'feature/**']
   pull_request:
     branches: [main]
 
 jobs:
-  lint-and-typecheck:
-    name: Lint & Type Check
+  build-and-test:
+    name: Build & Test
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -21,53 +20,14 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Instalar dependências
+      - name: Instalar dependencias
         run: npm ci
 
-      - name: Verificar tipagem (TypeScript)
+      - name: Type Check
         run: npx tsc --noEmit
 
-      - name: Lint (ESLint)
-        run: npx eslint src/ --max-warnings 0 || echo "⚠️ Lint concluído com avisos"
-
-  test:
-    name: Testes Unitários
-    runs-on: ubuntu-latest
-    needs: lint-and-typecheck
-
-    steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Instalar dependências
-        run: npm ci
-
-      - name: Rodar testes
+      - name: Testes
         run: npx vitest run --reporter=verbose
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Instalar dependências
-        run: npm ci
-
-      - name: Build TypeScript
+      - name: Build
         run: npm run build
